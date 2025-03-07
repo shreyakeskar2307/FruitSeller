@@ -70,7 +70,7 @@ if (isset($_POST['pay_now'])) {
 <?php include('header.php'); ?>
 
 <div class="container mt-5">
-    <h2>Your Cart</h2>
+    <h2 style="margin-top:290px;">Your Cart</h2>
 
     <?php if (!$payment_done): ?>
         <?php if (!empty($_SESSION['cart'])): ?>
