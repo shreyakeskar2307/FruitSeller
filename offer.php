@@ -1,5 +1,5 @@
 <?php
-
+require_once 'lib/function.php';
 // Initialize cart if not already done
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];

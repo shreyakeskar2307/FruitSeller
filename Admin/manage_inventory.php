@@ -1,6 +1,6 @@
 <?php
 // Include the required functions
-require_once('C:\xampp\htdocs\shreyaPHP\fruit seller\lib\function.php');
+require_once("../lib/function.php");
 
 // Instantiate the class
 $db = new class_functions();
@@ -158,9 +158,9 @@ $db = new class_functions();
 
 
         <div class="col-md-3">
-            <a href="coupon.php" style="text-decoration: none;">
+            <a href="payment_report.php" style="text-decoration: none;">
                 <div class="manager-card sales-master">
-                    <i class="bi bi-ticket-detailed-fill"></i> view Product stack
+                    <i class="bi bi-ticket-detailed-fill"></i> view Paid Customer
                 </div>
             </a>
         </div>

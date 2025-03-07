@@ -2,59 +2,78 @@
 // Include the required functions
 require_once("../lib/function.php");
 
+
 // Instantiate the class
 $db = new class_functions();
 
-  $db_password = null;
+//   $db_password = null;
  
 
-  if (isset($_GET['logout'])) {
-      unset($_SESSION['login_email']);
-      session_destroy();
-      header("Location: ./login.php");
-      exit();
-  }
-  if (isset($_SESSION['login_email'])) {
-     $logged_in_email = $_SESSION['login_email'];
+//   if (isset($_GET['logout'])) {
+//       unset($_SESSION['login_first_name']);
+//       session_destroy();
+//       header("Location: ./login.php");
+//       exit();
+//   }
+//   if (isset($_SESSION['login_first_name'])) {
+//      $logged_in_email = $_SESSION['login_first_name'];
  
-     // Fetch user details using the logged-in mobile number
-     $reg_data = $db->get_contact_report($logged_in_email); // Assume this function fetches user details as an associative array
-      $var_user_id =$logged_in_email;
- }
- if (!isset($_SESSION['login_email'])) {
-    header("Location: ./index.php");
-    exit();
- }
+//      // Fetch user details using the logged-in mobile number
+//      $reg_data = $db->get_admin_details($logged_in_email); // Assume this function fetches user details as an associative array
+//       $var_user_id =$logged_in_email;
+//  }
+//  if (!isset($_SESSION['login_first_name'])) {
+//     header("Location: ./index.php");
+//     exit();
+//  }
 
- 
- if(isset($_GET['delete_id']))
- {
-    $del_id = $_GET['delete_id'];
+
+
+
+     if(isset($_GET['delete_id']))
+     {
+        $del_id = $_GET['delete_id'];
+        
+        //DELETE RECORD
+        $db->delete_payment_record($del_id);
+     }
+     if (isset($_GET['excel_export'])) {
+        $filename = "user_report_" . date('Ymd') . ".xls";
+        header("Content-Type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=\"$filename\"");
     
-    //DELETE RECORD
-    $db->delete_contact_record($del_id);
- }
-
-
+        $reg_data = $db->get_payment_report(); // Ensure this function fetches data correctly
+        $show_column = false;
+    
+        if (!empty($reg_data)) {
+            foreach ($reg_data as $record) {
+                if (!$show_column) {
+                    // Display field/column names in the first row
+                    echo implode("\t", array_keys($record)) . "\n";
+                    $show_column = true;
+                }
+                echo implode("\t", array_values($record)) . "\n";
+            }
+        } else {
+            echo "No data found";
+        }
+        exit;
+    }
+    
 
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
-
-
     <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
       <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet">
-    <title>contact report</title>
+    <title>Payment report</title>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style> 
-
-
+    
 body {
     background-color: #f8f9fa;
     font-family: Arial, sans-serif;
@@ -79,13 +98,7 @@ body {
     text-align: center;
     margin-bottom: 30px;
 }
-.new-tag {
-    background-color: red;
-    color: white;
-    padding: 2px 5px;
-    font-size: 12px;
-    border-radius: 5px;
-}
+
 .sidebar a {
     color: white;
     text-decoration: none;
@@ -184,24 +197,28 @@ th, td {
     </div>
 
     <div class="table-container">
-        <h1 style="font-weight:bold;color: #28a745; text-align: center;">Contact Details / Report</h1>
+        <h1 style="font-weight:bold;color: #28a745; text-align: center;">PRODUCT Update/Delete</h1>
 
         <table class="table table-striped table-hover">
             <thead>
                 
         
         <th>Serial NO</th>
-        <th>Full Name</th>
+        <th>Customer Id</th>
+        <th>Customer Name</th>
         <th>Email</th>
-        <th>Message</th>
+        <th>Grand Total</th>
+        <th>Card Holder</th>
+        <th>Card Number</th>
+        <th>Expiry Date</th>
+        <th>CVV</th>
+        <!-- <th>Edit</th> -->
         <th>Delete</th>
     </thead>
-
-    
     <tbody>
         <?php
         $reg_data = array();
-        $reg_data = $db->get_contact_report();
+        $reg_data = $db->get_payment_report();
 
         //print_r($users_data);
         if(!empty($reg_data))
@@ -211,30 +228,45 @@ th, td {
             {
                 // echo res_id         $reg_data[$counter]['id'];//row column
                 $res_id          =   $reg_data[$counter]['id'];
-                $res_full_name   =   $reg_data[$counter]['full_name'];
-                $res_email         =   $reg_data[$counter]['email'];
-                $res_message        =   $reg_data[$counter]['message'];  
+                $res_customer_id   =   $reg_data[$counter]['customer_id'];
+                $res_customer_name         =   $reg_data[$counter]['customer_name'];
+                $res_email        =   $reg_data[$counter]['email'];
+                $res_grand_total        =   $reg_data[$counter]['grand_total'];
+                $res_cardholder         =   $reg_data[$counter]['cardholder'];
+                $res_cardnumber         =   $reg_data[$counter]['cardnumber'];
+                $res_expiry        =   $reg_data[$counter]['expiry'];
+                $res_cvv   =   $reg_data[$counter]['cvv'];
+                
+
+
 
                 ?>
                 <tr>
-                <td><?php echo $counter+1;      ?></td>
-                    <td><?php echo $res_full_name;  ?></td>
-                    <td><?php echo $res_email;    ?></td> 
-                    <td><?php echo $res_message;  ?></td>
-
-                                        <!-- <td>
+                    <td><?php echo $counter+1;      ?></td>
+                    <td><?php echo $res_customer_id;  ?></td>
+                    <td><?php echo $res_customer_name;    ?></td> 
+                    <td><?php echo $res_email;  ?></td>
+                    <td><?php echo $res_grand_total;  ?></td>
+                    <td><?php echo $res_cardholder;  ?></td>
+                    <td><?php echo $res_cardnumber;    ?></td>
+                    <td><?php echo $res_expiry;    ?></td>
+                    <td><?php echo $res_cvv;    ?></td>
+    <!-- <td>
     <a href="product_edit.php?edit_id=<?php echo $res_id; ?>" class="edit-btn">
     <i class="fas fa-edit"></i> 
     </a>
 </td> -->
 <td>
-    <a href="contact_details.php?delete_id=<?php echo $res_id; ?>" 
+    <a href="payment_report.php?delete_id=<?php echo $res_id; ?>" 
        class="delete-btn" 
        onclick="return confirm('Are you sure you want to delete this item?');">
        <i class="fas fa-trash-alt" style="color: red;"></i> 
     </a>
 </td>
-<?php
+
+                </tr>
+
+                <?php
                 $counter++;
             }
 
@@ -247,7 +279,8 @@ th, td {
         
         ?>
 </table>
-
+<!-- 
+<?php include('C:\xampp\htdocs\shreyaPHP\fruit seller\footer.php'); ?> -->
 <!-- </center> -->
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

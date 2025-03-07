@@ -1,7 +1,6 @@
 <?php
    // Include function file
-   require_once('C:\xampp\htdocs\shreyaPHP\fruit seller\lib\function.php');
-
+   require_once 'lib/function.php';
    // Initialize the variable to avoid undefined warnings
    $db_password = null;
 

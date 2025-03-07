@@ -1,7 +1,7 @@
 
 <?php
      //include function file
-     require_once('C:\xampp\htdocs\shreyaPHP\fruit seller\lib\function.php');
+     require_once("../lib/function.php");
 
      //function call creating call object 
      $db = new class_functions();

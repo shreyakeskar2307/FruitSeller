@@ -1,7 +1,6 @@
 <?php
      //include function file
-     require_once('C:\xampp\htdocs\shreyaPHP\fruit seller\lib\function.php');
-
+     require_once 'lib/function.php';
      //function call creating call object 
      $db = new class_functions();
 
@@ -9,11 +8,17 @@
      $db_password = null;
  
 
-     if (isset($_GET['logout'])) {
-         unset($_SESSION['login_email']);
-         header("Location: ./login.php");
-         exit();
-     }
+    //  if (isset($_GET['logout'])) {
+    //      unset($_SESSION['login_email']);
+    //      header("Location: ./login.php");
+    //      exit();
+    //  }
+    if (isset($_GET['logout'])) {
+      session_start();
+      session_destroy(); // Destroy the entire session
+      header("Location: ./login.php");
+      exit();
+  }
   
      
      if (isset($_SESSION['login_email'])) {
@@ -35,28 +40,45 @@
      $db->delete_cart_record($del_id);
   }
    $var_user_id;
-     if (isset($_GET['excel_export'])) {
-        $filename = "user_report_" . date('Ymd') . ".xls";
-        header("Content-Type: application/vnd.ms-excel");
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-    
-        $reg_data = $db->get_addtocart_report(); // Ensure this function fetches data correctly
-        $show_column = false;
-    
-        if (!empty($reg_data)) {
-            foreach ($reg_data as $record) {
-                if (!$show_column) {
-                    // Display field/column names in the first row
-                    echo implode("\t", array_keys($record)) . "\n";
-                    $show_column = true;
-                }
-                echo implode("\t", array_values($record)) . "\n";
-            }
-        } else {
-            echo "No data found";
-        }
-        exit;
-    }
+ 
+// Export order history to Excel
+if (isset($_GET['excel_export'])) {
+  $filename = "user_report_" . date('Ymd') . ".xls";
+  header("Content-Type: application/vnd.ms-excel");
+  header("Content-Disposition: attachment; filename=\"$filename\"");
+
+  $reg_data = $db->get_addtocart_report($var_user_id);
+  $history_data = $db->get_order_history($var_user_id);
+  $grand_total=0 ;
+  $show_column = false;
+
+  if (!empty($reg_data)) {
+      foreach ($reg_data as $record) {
+          if (!$show_column) {
+              echo implode("\t", array_keys($record)) . "\n";
+              $show_column = true;
+          }
+          echo implode("\t", array_values($record)) . "\n";
+      }
+  } else {
+      echo "No cart data found";
+  }
+
+  if (!empty($history_data)) {
+      foreach ($history_data as $record) {
+          if (!$show_column) {
+              echo implode("\t", array_keys($record)) . "\n";
+              $show_column = true;
+          }
+          echo implode("\t", array_values($record)) . "\n";
+      }
+  } else {
+      echo "\nNo order history found";
+  }
+
+  exit;
+}
+
 
         
 
@@ -145,6 +167,10 @@ tr:nth-child(even) {
 
 
 /* Grand Total Row */
+thead th:nth-child(odd){
+  background-color: #007bff;
+  color: #333;
+}
 thead th:last-child {
   background-color: #ffc107;
   color: #333;
@@ -153,6 +179,7 @@ thead th:nth-child(even){
   background-color: #ffc107;
   color: #333;
 }
+
 
 td:last-child {
   font-weight: bold;
@@ -190,9 +217,8 @@ footer {
    require_once('header.php')//to get another file
 ?>
     <!-- <center> -->
-        <P>cart REPORT</P>
-
-<table  cellspacing="0" cellpadding="0"  style="margin-top:110px;">
+    <center><h2 style="margin-top:160px;">Cart</h2></center>
+<table  cellspacing="0" cellpadding="0">
     <thead style="text-align:center !important;">
         <th>Serial No</th>
         <th>product id</th>
@@ -208,7 +234,8 @@ footer {
 
     <tbody>
         <?php
-        $res_grandtotal=0 ;
+        $curr_date="";
+        $grand_total=0 ;
         $reg_data = array();
         $reg_data = $db->get_addtocart_report($var_user_id);
 
@@ -227,7 +254,7 @@ footer {
                 $res_quantity         =   floatval($reg_data[$counter]['quantity']);
                 // $res_total         =   $reg_data[$counter]['total'];
                 $res_total = floatval($res_offer_price* $res_quantity);
-                $res_grandtotal +=$res_total;
+                $grand_total +=$res_total;
                 // $res_user_id         =  $reg_data[$counter]['user_id'];
 
 
@@ -241,6 +268,7 @@ footer {
                     <td><?php echo $res_original_price;    ?></td>
                     <td><?php echo $res_quantity;    ?></td>
                     <td><?php echo $res_total;    ?></td>
+
                     <!-- <td><?php //echo $res_user_id;    ?></td> -->
 
 
@@ -249,11 +277,11 @@ footer {
 </td> -->
 <td>
     <a href="cart.php?delete_id=<?php echo $res_id; ?>" 
+    class="delete-btn" 
        onclick="return confirm('Are you sure you want to delete this item?');">
-       Delete
+       <i class="fas fa-trash-alt" style="color: red;"></i> 
     </a>
 </td>
-
         
                 </tr>
 
@@ -274,26 +302,58 @@ footer {
             <th>Grand Total</th>
         </thead>
         <tr>                    
-            <td><?php echo $res_grandtotal;    ?></td>
+            <td><?php echo $grand_total;    ?></td>
         </tr>
 </table>
-<a type="submit" class="btn btn-secondary c_button" name="logout" value="Logout" href="index.php?logout">Logout</a>
+<a type="submit" class="btn btn-secondary c_button" name="payment" href="home.php">
+    Back To Home
+</a>
+<a type="submit"  class="btn btn-secondary c_button" name="payment" href="payment.php?grand_total=<?php echo $grand_total; ?>">
+    Proceed to Payment
+</a>
+<h2 class="text-center mt-4">Order History</h2>
 
-<a type="submit" class="btn btn-secondary c_button" name="logout" value="Logout" href="index.php?logout">Payment Here</a>
+<table class="table mt-3">
+<thead style="text-align:center !important; " >
+        <th>Serial NO</th>
+        <th>Product ID</th>
+        <th>Product Name</th>
+        <th>Offer Price</th>
+        <th>Original Price</th>
+        <th>Quantity</th>
+        <th>Total</th>
+        <th>Order Date</th>
+    </thead>
+    <tbody>
+        <?php
+        $res_history_grandtotal=0 ;
+        $history_data = $db->get_order_history($var_user_id);
+        if (!empty($history_data)) {
+            foreach ($history_data as $order) {
+                ?>
+                <tr>
+                    <td><?php echo $order['id']; ?></td>
+                    <td><?php echo $order['product_id']; ?></td>
+                    <td><?php echo $order['product_name']; ?></td>
+                    <td><?php echo $order['offer_price']; ?></td>
+                    <td><?php echo $order['original_price']; ?></td>
+                    <td><?php echo $order['quantity']; ?></td>
+                    <td><?php echo $order['total']; ?></td>
+                    <td><?php echo $order['curr_date']; ?></td>
+                </tr>
+                <?php
+            }
+        } else {
+            echo "<tr><td colspan='8'>No past orders found.</td></tr>";
+        }
+        ?>
+
+    </tbody>
+</table>
+<a class="btn btn-secondary c_button" href="index.php?logout" onclick="return confirm('Are you sure you want to log out?');">Logout</a>
+
+
 <!-- </center> -->
 <?php include('footer.php'); ?>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-

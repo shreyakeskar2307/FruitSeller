@@ -3,8 +3,7 @@ all vegetable category display -->
 
 <?php
 // Include the required functions
-require_once('C:\xampp\htdocs\shreyaPHP\fruit seller\lib\function.php');
-
+require_once 'lib/function.php';
 // Instantiate the class
 $db = new class_functions();
 

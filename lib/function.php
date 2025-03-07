@@ -445,92 +445,146 @@ function  addtocart(
     }
 }
 
+// function get_addtocart_report($var_user_id)
+// {
+//     // Prepare the SELECT query
+//     if($stmt = $this->con->prepare("SELECT `id`,`product_id`,`product_name`,`offer_price`,`original_price`,`quantity`,`total`,`user_id`  FROM `addtocart` WHERE `user_id`=?")){//connection used and prepare by query
+
+//        //bind result()
+//        $stmt->bind_result($res_id,$res_product_id, $res_product_name, $res_offer_price,$res_original_price,$res_quantity,$res_total,$res_user_id);//text=s,int=i
+//        //bind result to a named show the  result
+//        $stmt->bind_param("s", $var_user_id);
+
+//        if($stmt->execute())
+//        {
+//             $data = array();
+//             $counter = 0; // Initialize a counter
+//             while($stmt->fetch()) 
+//             {
+//                 $data[$counter]['id']                   = $res_id;
+//                 $data[$counter]['product_id']            = $res_product_id;
+//                 $data[$counter]['product_name']                = $res_product_name;
+//                 $data[$counter]['offer_price']                = $res_offer_price;
+//                 $data[$counter]['original_price']            = $res_original_price;
+//                 $data[$counter]['quantity']                = $res_quantity;
+//                 $data[$counter]['total']              = $res_total;
+//                 $data[$counter]['user_id']              = $res_user_id;
+
+//                 $counter++;
+//             }
+//             if(!empty($data))
+//             {
+//                 return $data;
+//             }
+//             else
+//             {
+//                 return false;
+//             }
+//         }
+        
+//     }
+// }
 
 function get_addtocart_report($var_user_id)
 {
-    // Prepare the SELECT query
-    if($stmt = $this->con->prepare("SELECT `id`,`product_id`,`product_name`,`offer_price`,`original_price`,`quantity`,`total`,`user_id`  FROM `addtocart` WHERE `user_id`=?")){//connection used and prepare by query
+    // Prepare the SELECT query with a date filter for today
+    if($stmt = $this->con->prepare("SELECT `id`,`product_id`,`product_name`,`offer_price`,`original_price`,`quantity`,`total`,`user_id`  
+                                   FROM `addtocart` 
+                                   WHERE `user_id` = ? AND DATE(`curr_date`) = CURDATE()")) {
 
-       //bind result()
-       $stmt->bind_result($res_id,$res_product_id, $res_product_name, $res_offer_price,$res_original_price,$res_quantity,$res_total,$res_user_id);//text=s,int=i
-       //bind result to a named show the  result
+       // Bind the result variables
+       $stmt->bind_result($res_id, $res_product_id, $res_product_name, $res_offer_price, $res_original_price, $res_quantity, $res_total, $res_user_id);
+       
+       // Bind the user_id parameter
        $stmt->bind_param("s", $var_user_id);
 
-       if($stmt->execute())
-       {
+       if($stmt->execute()) {
             $data = array();
-            $counter = 0; // Initialize a counter
-            while($stmt->fetch()) 
-            {
-                $data[$counter]['id']                   = $res_id;
-                $data[$counter]['product_id']            = $res_product_id;
-                $data[$counter]['product_name']                = $res_product_name;
-                $data[$counter]['offer_price']                = $res_offer_price;
-                $data[$counter]['original_price']            = $res_original_price;
-                $data[$counter]['quantity']                = $res_quantity;
-                $data[$counter]['total']              = $res_total;
-                $data[$counter]['user_id']              = $res_user_id;
-
+            $counter = 0;
+            while($stmt->fetch()) {
+                $data[$counter]['id'] = $res_id;
+                $data[$counter]['product_id'] = $res_product_id;
+                $data[$counter]['product_name'] = $res_product_name;
+                $data[$counter]['offer_price'] = $res_offer_price;
+                $data[$counter]['original_price'] = $res_original_price;
+                $data[$counter]['quantity'] = $res_quantity;
+                $data[$counter]['total'] = $res_total;
+                $data[$counter]['user_id'] = $res_user_id;
                 $counter++;
             }
-            if(!empty($data))
-            {
-                return $data;
-            }
-            else
-            {
-                return false;
-            }
+            return !empty($data) ? $data : false;
         }
-        
     }
 }
 
-function get_user_profile($var_email)
-    {
-        // Prepare the SELECT query
-        if($stmt = $this->con->prepare("SELECT `first_name`, `last_name`, `mobile_no`, `account_type`, 
-        `company_name`, `company_address`, `profile_image`, `email`  FROM `fruit_registered` WHERE `email`=?")){//connection used and prepare by query
+function get_order_history($var_user_id)
+{
+    if($stmt = $this->con->prepare("SELECT `id`,`product_id`,`product_name`,`offer_price`,`original_price`,`quantity`,`total`,`user_id` ,`curr_date` 
+                                   FROM `addtocart` 
+                                   WHERE `user_id` = ? AND DATE(`curr_date`) < CURDATE()")) {
 
-           //bind result
-           $stmt->bind_param("s", $var_email);
+       $stmt->bind_result($res_id, $res_product_id, $res_product_name, $res_offer_price, $res_original_price, $res_quantity, $res_total, $res_user_id,$res_curr_date);
+       $stmt->bind_param("s", $var_user_id);
 
-           if ($stmt->execute()) {
-           $stmt->bind_result( $res_first_name, $res_last_name, $res_mobile_no, $res_account_type,
-           $res_company_name, $res_company_address,$res_profile_image, $res_email);//text=s,int=i
-           //bind result to a named show the  result
-          
-           {
+       if($stmt->execute()) {
             $data = array();
-            $counter = 0; // Initialize a counter
-            while($stmt->fetch()) 
-            {
-      
-                    $data[$counter]['first_name']           = $res_first_name;
-                    $data[$counter]['last_name']            = $res_last_name;
-                    $data[$counter]['mobile_no']            = $res_mobile_no;
-                    $data[$counter]['account_type']         = $res_account_type;
-                    $data[$counter]['company_name']         = $res_company_name;
-                    $data[$counter]['company_address']      = $res_company_address;
-                    $data[$counter]['profile_image']        = $res_profile_image;
-                    $data[$counter]['email']                = $res_email;
-   
-                    $counter++;
+            $counter = 0;
+            while($stmt->fetch()) {
+                $data[$counter]['id'] = $res_id;
+                $data[$counter]['product_id'] = $res_product_id;
+                $data[$counter]['product_name'] = $res_product_name;
+                $data[$counter]['offer_price'] = $res_offer_price;
+                $data[$counter]['original_price'] = $res_original_price;
+                $data[$counter]['quantity'] = $res_quantity;
+                $data[$counter]['total'] = $res_total;
+                $data[$counter]['user_id'] = $res_user_id;
+                $data[$counter]['curr_date'] = $res_curr_date;
 
-                }
-                if(!empty($data))
-                {
-                    return $data;
-                }
-                else
-                {
-                    return false;
-                }
+                $counter++;
             }
-            
+            return !empty($data) ? $data : false;
         }
     }
+}
+function get_user_profile($var_email)
+{
+    // Prepare the SELECT query (include `id`)
+    if ($stmt = $this->con->prepare("SELECT `id`, `first_name`, `last_name`, `mobile_no`, `account_type`, 
+        `company_name`, `company_address`, `profile_image`, `email`  
+        FROM `fruit_registered` WHERE `email`=?")) {
+
+        // Bind email parameter
+        $stmt->bind_param("s", $var_email);
+
+        if ($stmt->execute()) {
+            // Bind result variables
+            $stmt->bind_result($res_id, $res_first_name, $res_last_name, $res_mobile_no, $res_account_type,
+                $res_company_name, $res_company_address, $res_profile_image, $res_email);
+
+            $data = array();
+            $counter = 0; // Initialize a counter
+
+            while ($stmt->fetch()) {
+                $data[$counter]['id']                  = $res_id;
+                $data[$counter]['first_name']          = $res_first_name;
+                $data[$counter]['last_name']           = $res_last_name;
+                $data[$counter]['mobile_no']           = $res_mobile_no;
+                $data[$counter]['account_type']        = $res_account_type;
+                $data[$counter]['company_name']        = $res_company_name;
+                $data[$counter]['company_address']     = $res_company_address;
+                $data[$counter]['profile_image']       = $res_profile_image;
+                $data[$counter]['email']               = $res_email;
+
+                $counter++;
+            }
+
+            // Return data if found, otherwise return false
+            return !empty($data) ? $data : false;
+        }
     }
+    return false; // Return false if query execution fails
+}
+
     //fruit
     
 function get_user_report_product_fruit()
@@ -1059,5 +1113,78 @@ function get_contact_report()
         
     }
 }
+
+//payment
+function  payment_customer(
+    $var_customer_id, $var_customer_name, $var_email,$var_grand_total, $var_cardholder, $var_cardnumber, $var_expiry,$var_cvv)
+{
+    // not user input automatically saved value of date and time
+    $curr_date = date("Y-m-d");
+    $curr_time = date("H:i:s A");
+
+    // parameter pass
+    if ($stmt = $this->con->prepare("INSERT INTO `payment_customer`(`customer_id`, `customer_name`, `email`,`grand_total`, `cardholder`, `cardnumber`, `expiry`, `cvv`, `curr_date`,`curr_time`) VALUES (?,?,?,?,?,?,?,?,?,?)")) {
+        // save value in table
+        $stmt->bind_param(
+            "ssssssssss",
+            $var_customer_id, $var_customer_name, $var_email,$var_grand_total, $var_cardholder, $var_cardnumber, $var_expiry,$var_cvv, $curr_date, $curr_time
+        );
+        
+
+        // Execute the query
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+function get_payment_report()
+{
+    // Prepare the SELECT query
+    if($stmt = $this->con->prepare("SELECT `id`,`customer_id`, `customer_name`, `email`,`grand_total`, `cardholder`, `cardnumber`, `expiry`, `cvv`  FROM `payment_customer`")){//connection used and prepare by query
+
+       //bind result
+       $stmt->bind_result($res_id,$res_customer_id, $res_customer_name, $res_email,$res_grand_total, $res_cardholder, $res_cardnumber, $res_expiry,$res_cvv);//text=s,int=i
+       //bind result to a named show the  result
+
+       if($stmt->execute())
+       {
+            $data = array();
+            $counter = 0; // Initialize a counter
+            while($stmt->fetch()) 
+            {
+                $data[$counter]['id']                   = $res_id;
+                $data[$counter]['customer_id']            = $res_customer_id;
+                $data[$counter]['customer_name']                = $res_customer_name;
+                $data[$counter]['email']              = $res_email;
+                $data[$counter]['grand_total']              = $res_grand_total;
+                $data[$counter]['cardholder']            = $res_cardholder;
+                $data[$counter]['cardnumber']                = $res_cardnumber;
+                $data[$counter]['expiry']              = $res_expiry;
+                $data[$counter]['cvv']            = $res_cvv;
+
+                $counter++;
+            }
+            if(!empty($data))
+            {
+                return $data;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        
+    }
+}
+
+
+
+
+
 
 }//END
